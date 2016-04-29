@@ -1,0 +1,40 @@
+{% extends "global_watershed_delin/base.html" %}
+
+{% load tethys_gizmos %}
+
+{% load staticfiles %}
+
+{% block styles %}
+{{ block.super }}
+    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
+	<link rel="stylesheet" href="http://js.arcgis.com/3.8/js/dojo/dijit/themes/claro/claro.css">
+
+    <style>
+      #mapDiv {
+        height: 500px;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+      }
+    </style>
+{% endblock %}
+
+{% block app_navigation_items %}
+
+{% gizmo button btnCompute %}
+
+{% endblock %}
+
+{% block app_content %}
+
+<div id="mapDiv"></div>
+
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="http://js.arcgis.com/3.8/"></script>
+  <script src="{% static 'global_watershed_delin/js/main.js' %}"></script>
+
+{% endblock %}
+
