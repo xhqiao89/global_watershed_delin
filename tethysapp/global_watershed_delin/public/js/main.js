@@ -3,6 +3,7 @@ require(["dojo/dom",
           "dojo/_base/Color",
 
           "esri/map",
+          "esri/dijit/Search",
           "esri/graphic",
           "esri/graphicsUtils",
           "esri/tasks/Geoprocessor",
@@ -14,7 +15,7 @@ require(["dojo/dom",
           "esri/symbols/CartographicLineSymbol",
           "esri/IdentityManager"
           ],
-    function(dom, Color, Map, Graphic, graphicsUtils, Geoprocessor, FeatureSet, ArcGISTiledMapServiceLayer, GraphicsLayer, SimpleMarkerSymbol, SimpleFillSymbol, CartographicLineSymbol){
+    function(dom, Color, Map, Search, Graphic, graphicsUtils, Geoprocessor, FeatureSet, ArcGISTiledMapServiceLayer, GraphicsLayer, SimpleMarkerSymbol, SimpleFillSymbol, CartographicLineSymbol){
 
         var map, gp;
         var featureSet = new FeatureSet();
@@ -27,11 +28,17 @@ require(["dojo/dom",
           zoom: 4
         });
 
+        var search = new Search({
+            map: map
+         }, "search");
+
+        search.startup();
+
         var basemap = new ArcGISTiledMapServiceLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer");
         var overlay = new ArcGISTiledMapServiceLayer("http://hydrology.esri.com/arcgis/rest/services/WorldHydroReferenceOverlay/MapServer");
         var tempPoint = new GraphicsLayer();
         var watersheds = new GraphicsLayer();
-        map.addLayers([basemap, overlay, tempPoint, watersheds])
+        map.addLayers([basemap, overlay, tempPoint, watersheds]);
 
         //Set GP Symbology
         var outline = new CartographicLineSymbol(CartographicLineSymbol.STYLE_SOLID, new Color([0,0,0,1]), 2);
@@ -39,7 +46,7 @@ require(["dojo/dom",
         outline.setJoin(CartographicLineSymbol.JOIN_ROUND);
 
         var pointSymbol = new SimpleMarkerSymbol();
-        pointSymbol.setStyle(SimpleMarkerSymbol.STYLE_CIRCLE)
+        pointSymbol.setStyle(SimpleMarkerSymbol.STYLE_CIRCLE);
         pointSymbol.setSize("10");
         pointSymbol.setColor(new Color([59, 148, 0, 1]));
         pointSymbol.setOutline(outline);
@@ -59,6 +66,8 @@ require(["dojo/dom",
         gp.setOutSpatialReference({wkid: 102100});
         map.on("click", addPoint);
 
+        //kml_gp = new Geoprocessor("http://geoserver.byu.edu/arcgis/rest/services/GWD/FeaturesToKML/GPServer/FeaturesToKML");
+        //kml_gp.setOutSpatialReference({wkid: 102100});
 
      function addPoint(evt) {
          tempPoint.clear();
@@ -82,13 +91,24 @@ require(["dojo/dom",
           "SourceDatabase": "FINEST",
           "Generalize": "True"
         };
-        gp.submitJob(params, Callback, null, function(error){
+        gp.submitJob(params, completeCallback, statusCallback, function(error){
         console.log("Error", error, params);
         window.alert("Sorry, we do not have data for this region at your requested resolution");
         });
         }
 
-      function Callback(jobInfo){
+    function statusCallback(jobInfo) {
+        console.log(jobInfo.jobStatus);
+        if (jobInfo.jobStatus === "esriJobSubmitted") {
+          $("#delinstatus").html("<h7 style='color:blue'><b>Job submitted...</b></h7>");
+        } else if (jobInfo.jobStatus === "esriJobExecuting") {
+            $("#delinstatus").html("<h7 style='color:red;'><b>Calculating...</b></h7>");
+        } else if (jobInfo.jobStatus === "esriJobSucceeded") {
+            $("#delinstatus").html("<h7 style='color:green;'><b>Succeed!</b></h7>");
+        }
+      }
+
+      function completeCallback(jobInfo){
         gp.getResultData(jobInfo.jobId, "WatershedArea", drawWatershed);
         gp.getResultData(jobInfo.jobId, "SnappedPoints", drawSnappedPoint);
       }
@@ -100,7 +120,9 @@ require(["dojo/dom",
             var feature = features[f];
             feature.setSymbol(polySymbol);
             watersheds.add(feature);
-        }
+                    }
+          map.setExtent(graphicsUtils.graphicsExtent(watersheds.graphics), true);
+          console.log(watersheds.graphics[0].geometry);
       }
 
       function drawSnappedPoint(results) {
@@ -111,9 +133,9 @@ require(["dojo/dom",
             feature.setSymbol(snapSymbol);
             map.graphics.add(feature);
         }
-          map.setExtent(graphicsUtils.graphicsExtent(watersheds.graphics), true);
       }
 
         //adds public functions to variable app
-        app = {computeWatershed: computeWatershed};
+        app = {computeWatershed: computeWatershed
+        };
 });

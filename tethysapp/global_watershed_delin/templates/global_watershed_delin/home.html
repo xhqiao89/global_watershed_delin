@@ -6,8 +6,8 @@
 
 {% block styles %}
 {{ block.super }}
-    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
-	<link rel="stylesheet" href="http://js.arcgis.com/3.8/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.16/esri/css/esri.css">
+	<link rel="stylesheet" href="http://js.arcgis.com/3.16/dijit/themes/claro/claro.css">
 
     <style>
       #mapDiv {
@@ -16,12 +16,24 @@
         padding: 0;
         width: 100%;
       }
+      #search {
+        height: 50px;
+        width: 500px;
+      }
     </style>
 {% endblock %}
 
 {% block app_navigation_items %}
 
+<div id="search"></div>
+
 {% gizmo button btnCompute %}
+
+<div id="statusDiv">
+    <p id="delinstatus"></p>
+  </div>
+
+{% gizmo button btnDownload %}
 
 {% endblock %}
 
@@ -33,7 +45,7 @@
 
 {% block scripts %}
   {{ block.super }}
-  <script src="http://js.arcgis.com/3.8/"></script>
+  <script src="https://js.arcgis.com/3.16/"></script>
   <script src="{% static 'global_watershed_delin/js/main.js' %}"></script>
 
 {% endblock %}
