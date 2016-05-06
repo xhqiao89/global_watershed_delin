@@ -1,7 +1,8 @@
 
-require(["dojo/dom",
-          "dojo/_base/Color",
-
+require([
+        "dojo/dom",
+        "dojo/_base/Color",
+        "dojo/cookie",
           "esri/map",
           "esri/dijit/Search",
           "esri/graphic",
@@ -14,12 +15,12 @@ require(["dojo/dom",
           "esri/symbols/SimpleFillSymbol",
           "esri/symbols/CartographicLineSymbol",
           "esri/IdentityManager"
-          ],
-    function(dom, Color, Map, Search, Graphic, graphicsUtils, Geoprocessor, FeatureSet, ArcGISTiledMapServiceLayer, GraphicsLayer, SimpleMarkerSymbol, SimpleFillSymbol, CartographicLineSymbol){
+    ],
+    function(dom, Color, Cookie, Map, Search, Graphic, graphicsUtils, Geoprocessor, FeatureSet, ArcGISTiledMapServiceLayer, GraphicsLayer, SimpleMarkerSymbol, SimpleFillSymbol, CartographicLineSymbol){
+
 
         var map, gp;
         var featureSet = new FeatureSet();
-
 
         //Initialize Map
         map = new Map("mapDiv", {
@@ -52,7 +53,7 @@ require(["dojo/dom",
         pointSymbol.setOutline(outline);
 
         var snapSymbol = new SimpleMarkerSymbol();
-        snapSymbol.setStyle(SimpleMarkerSymbol.STYLE_CIRCLE)
+        snapSymbol.setStyle(SimpleMarkerSymbol.STYLE_CIRCLE);
         snapSymbol.setSize("10");
         snapSymbol.setColor(new Color([0, 255, 0, 1]));
         snapSymbol.setOutline(outline);
@@ -61,8 +62,11 @@ require(["dojo/dom",
         polySymbol.setColor(new Color([55,138,73,.25]));
         polySymbol.setOutline(outline);
 
+
         //Add Watershed Delineation Geoprocessing Function
-        gp = new Geoprocessor("http://hydro.arcgis.com/arcgis/rest/services/Tools/Hydrology/GPServer/Watershed");
+        //gp = new Geoprocessor("http://hydro.arcgis.com/arcgis/rest/services/Tools/Hydrology/GPServer/Watershed");
+        gp = new Geoprocessor("http://utility.arcgis.com/usrsvcs/appservices/jscdO6XKCTrf3vOM/rest/services/Tools/Hydrology/GPServer/Watershed");
+
         gp.setOutSpatialReference({wkid: 102100});
         map.on("click", addPoint);
 
@@ -123,6 +127,12 @@ require(["dojo/dom",
                     }
           map.setExtent(graphicsUtils.graphicsExtent(watersheds.graphics), true);
           console.log(watersheds.graphics[0].geometry);
+          //console.log(watersheds.graphics[0].geometry.toJson());
+
+          //convert watershed polygon to geojson file
+          //var watershed_geojson = Terraformer.ArcGIS.parse(watersheds.graphics[0].geometry);
+          //console.log(watershed_geojson);
+
       }
 
       function drawSnappedPoint(results) {
@@ -134,8 +144,45 @@ require(["dojo/dom",
             map.graphics.add(feature);
         }
       }
+        function requestSucceeded(data) {
+              console.log("Data: ", data); // print the data to browser's console
+            }
+
+        function requestFailed(error) {
+              console.log("Error: ", error.message);
+            }
+
+        function upload_to_HS(){
+
+            //convert watershed polygon to geojson file
+            var watershed_geojson = Terraformer.ArcGIS.parse(watersheds.graphics[0].geometry);
+            console.log(watershed_geojson);
+            // Using dojo.xhrGet, as we simply want to retrieve information
+            dojo.xhrPost({
+                // The URL of the request
+                url: "upload-to-hydroshare/",
+                // Handle the result as JSON data
+                handleAs: "json",
+                content: {
+                        "geojson_str": JSON.stringify(watershed_geojson)
+                },
+                headers: {
+                        "X-CSRFToken": Cookie("csrftoken")
+                },
+                // The success handler
+                load: function(jsonData) {
+                    alert("good");
+                },
+                // The error handler
+                error: function() {
+                    alert("bad");
+                }
+            });
+
+        }
 
         //adds public functions to variable app
-        app = {computeWatershed: computeWatershed
+        app = {computeWatershed: computeWatershed,
+            upload_to_HS: upload_to_HS
         };
 });

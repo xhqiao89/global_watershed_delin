@@ -29,6 +29,9 @@ class GlobalWatershedDelineationService(TethysAppBase):
                     UrlMap(name='sample',
                            url='global-watershed-delin/sample',
                            controller='global_watershed_delin.controllers.sample'),
+                    UrlMap(name='upload_to_hydroshare_ajax',
+                           url='global-watershed-delin/upload-to-hydroshare',
+                           controller='global_watershed_delin.controllers.upload_to_hydroshare'),
         )
 
         return url_maps
