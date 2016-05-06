@@ -1,4 +1,3 @@
-
 require([
         "dojo/dom",
         "dojo/_base/Color",
