@@ -12,8 +12,7 @@ require([
           "esri/layers/GraphicsLayer",
           "esri/symbols/SimpleMarkerSymbol",
           "esri/symbols/SimpleFillSymbol",
-          "esri/symbols/CartographicLineSymbol",
-          "esri/IdentityManager"
+          "esri/symbols/CartographicLineSymbol"
     ],
     function(dom, Color, Cookie, Map, Search, Graphic, graphicsUtils, Geoprocessor, FeatureSet, ArcGISTiledMapServiceLayer, GraphicsLayer, SimpleMarkerSymbol, SimpleFillSymbol, CartographicLineSymbol){
 
@@ -63,8 +62,8 @@ require([
 
 
         //Add Watershed Delineation Geoprocessing Function
-        //gp = new Geoprocessor("http://hydro.arcgis.com/arcgis/rest/services/Tools/Hydrology/GPServer/Watershed");
-        gp = new Geoprocessor("https://utility.arcgis.com/usrsvcs/appservices/jscdO6XKCTrf3vOM/rest/services/Tools/Hydrology/GPServer/Watershed");
+        gp = new Geoprocessor("https://hydro.arcgis.com/arcgis/rest/services/Tools/Hydrology/GPServer/Watershed");
+        //gp = new Geoprocessor("https://utility.arcgis.com/usrsvcs/appservices/jscdO6XKCTrf3vOM/rest/services/Tools/Hydrology/GPServer/Watershed");
 
         gp.setOutSpatialReference({wkid: 102100});
         map.on("click", addPoint);
