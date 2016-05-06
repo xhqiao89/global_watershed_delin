@@ -35,11 +35,11 @@ require([
 
         search.startup();
 
-        var basemap = new ArcGISTiledMapServiceLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer");
-        var overlay = new ArcGISTiledMapServiceLayer("http://hydrology.esri.com/arcgis/rest/services/WorldHydroReferenceOverlay/MapServer");
+        var basemap = new ArcGISTiledMapServiceLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer");
+        //var overlay = new ArcGISTiledMapServiceLayer("https://hydrology.esri.com/arcgis/rest/services/WorldHydroReferenceOverlay/MapServer");
         var tempPoint = new GraphicsLayer();
         var watersheds = new GraphicsLayer();
-        map.addLayers([basemap, overlay, tempPoint, watersheds]);
+        map.addLayers([basemap, tempPoint, watersheds]);
 
         //Set GP Symbology
         var outline = new CartographicLineSymbol(CartographicLineSymbol.STYLE_SOLID, new Color([0,0,0,1]), 2);
@@ -65,7 +65,7 @@ require([
 
         //Add Watershed Delineation Geoprocessing Function
         //gp = new Geoprocessor("http://hydro.arcgis.com/arcgis/rest/services/Tools/Hydrology/GPServer/Watershed");
-        gp = new Geoprocessor("http://utility.arcgis.com/usrsvcs/appservices/jscdO6XKCTrf3vOM/rest/services/Tools/Hydrology/GPServer/Watershed");
+        gp = new Geoprocessor("https://utility.arcgis.com/usrsvcs/appservices/jscdO6XKCTrf3vOM/rest/services/Tools/Hydrology/GPServer/Watershed");
 
         gp.setOutSpatialReference({wkid: 102100});
         map.on("click", addPoint);
