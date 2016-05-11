@@ -159,10 +159,15 @@ require([
                 return options[typeSelection];
             };
 
+            var displayStatus = $('#display-status');
             var resourceAbstract = $('#resource-abstract').val();
             var resourceTitle = $('#resource-title').val();
             var resourceKeywords = $('#resource-keywords').val() ? $('#resource-keywords').val() : "";
             var resourceType = resourceTypeSwitch($('#resource-type').val());
+
+            displayStatus.removeClass('error');
+            displayStatus.addClass('uploading');
+            displayStatus.html('<em>Uploading...</em>');
 
              if (!resourceTitle || !resourceKeywords || !resourceAbstract) {
                 displayStatus.removeClass('uploading');
@@ -170,6 +175,8 @@ require([
                 displayStatus.html('<em>You must provide all metadata information.</em>');
                 return;
             }
+
+            $('#hydroshare-proceed').prop('disabled', true);
 
             dojo.xhrPost({
                 // The URL of the request
@@ -188,11 +195,21 @@ require([
                 },
                 // The success handler
                 load: function(jsonData) {
-                    alert("Success");
+                    $('#hydroshare-proceed').prop('disabled', false);
+                    //alert("Success");
+                    displayStatus.removeClass('uploading');
+                    displayStatus.addClass('success');
+                    displayStatus.html('<em>' + jsonData.success + ' View in HydroShare <a href="https://www.hydroshare.org/resource/' + jsonData.newResource +
+                    '" target="_blank">HERE</a></em>');
                 },
                 // The error handler
                 error: function() {
-                    alert("Error");
+                    //alert("Error");
+                    $('#hydroshare-proceed').prop('disabled', false);
+                    console.log(jqXHR + '\n' + textStatus + '\n' + errorThrown);
+                    displayStatus.removeClass('uploading');
+                    displayStatus.addClass('error');
+                    displayStatus.html('<em>' + errorThrown + '</em>');
                 }
             });
         });

@@ -163,12 +163,3 @@ def upload_to_hydroshare(request):
                 shutil.rmtree(temp_dir)
 
     return JsonResponse(return_json)
-
-
-def sample(request):
-    """
-    Controller for the app home page.
-    """
-    context = {}
-
-    return render(request, 'global_watershed_delin/sample.html', context)
