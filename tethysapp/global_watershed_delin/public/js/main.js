@@ -188,11 +188,11 @@ require([
                 },
                 // The success handler
                 load: function(jsonData) {
-                    alert("good");
+                    alert("Success");
                 },
                 // The error handler
                 error: function() {
-                    alert("bad");
+                    alert("Error");
                 }
             });
         });

@@ -8,7 +8,7 @@ class GlobalWatershedDelineationService(TethysAppBase):
 
     name = 'Global Watershed Delineation Service'
     index = 'global_watershed_delin:home'
-    icon = 'global_watershed_delin/images/icon.gif'
+    icon = 'global_watershed_delin/images/app_icon.png'
     package = 'global_watershed_delin'
     root_url = 'global-watershed-delin'
     color = '#3399FF'
