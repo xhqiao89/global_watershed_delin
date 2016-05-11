@@ -2,6 +2,9 @@ require([
         "dojo/dom",
         "dojo/_base/Color",
         "dojo/cookie",
+        "dijit/Dialog",
+        "dijit/form/Button",
+        "dijit/form/TextBox",
           "esri/map",
           "esri/dijit/Search",
           "esri/graphic",
@@ -14,8 +17,7 @@ require([
           "esri/symbols/SimpleFillSymbol",
           "esri/symbols/CartographicLineSymbol"
     ],
-    function(dom, Color, Cookie, Map, Search, Graphic, graphicsUtils, Geoprocessor, FeatureSet, ArcGISTiledMapServiceLayer, GraphicsLayer, SimpleMarkerSymbol, SimpleFillSymbol, CartographicLineSymbol){
-
+    function(dom, Color, Cookie, Dialog, Button, TextBox, Map, Search, Graphic, graphicsUtils, Geoprocessor, FeatureSet, ArcGISTiledMapServiceLayer, GraphicsLayer, SimpleMarkerSymbol, SimpleFillSymbol, CartographicLineSymbol){
 
         var map, gp;
         var featureSet = new FeatureSet();
@@ -27,14 +29,14 @@ require([
           zoom: 4
         });
 
+        //Search function
         var search = new Search({
             map: map
          }, "search");
 
         search.startup();
 
-        var basemap = new ArcGISTiledMapServiceLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer");
-        //var overlay = new ArcGISTiledMapServiceLayer("https://hydrology.esri.com/arcgis/rest/services/WorldHydroReferenceOverlay/MapServer");
+        var basemap = new ArcGISTiledMapServiceLayer("https://server.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer");
         var tempPoint = new GraphicsLayer();
         var watersheds = new GraphicsLayer();
         map.addLayers([basemap, tempPoint, watersheds]);
@@ -60,16 +62,12 @@ require([
         polySymbol.setColor(new Color([55,138,73,.25]));
         polySymbol.setOutline(outline);
 
-
         //Add Watershed Delineation Geoprocessing Function
         gp = new Geoprocessor("https://hydro.arcgis.com/arcgis/rest/services/Tools/Hydrology/GPServer/Watershed");
         //gp = new Geoprocessor("https://utility.arcgis.com/usrsvcs/appservices/jscdO6XKCTrf3vOM/rest/services/Tools/Hydrology/GPServer/Watershed");
 
         gp.setOutSpatialReference({wkid: 102100});
         map.on("click", addPoint);
-
-        //kml_gp = new Geoprocessor("http://geoserver.byu.edu/arcgis/rest/services/GWD/FeaturesToKML/GPServer/FeaturesToKML");
-        //kml_gp.setOutSpatialReference({wkid: 102100});
 
      function addPoint(evt) {
          tempPoint.clear();
@@ -125,11 +123,9 @@ require([
                     }
           map.setExtent(graphicsUtils.graphicsExtent(watersheds.graphics), true);
           console.log(watersheds.graphics[0].geometry);
-          //console.log(watersheds.graphics[0].geometry.toJson());
 
           //convert watershed polygon to geojson file
           //var watershed_geojson = Terraformer.ArcGIS.parse(watersheds.graphics[0].geometry);
-          //console.log(watershed_geojson);
 
       }
 
@@ -150,19 +146,42 @@ require([
               console.log("Error: ", error.message);
             }
 
-        function upload_to_HS(){
-
+        $('#hydroshare-proceed').on('click', function (){
             //convert watershed polygon to geojson file
             var watershed_geojson = Terraformer.ArcGIS.parse(watersheds.graphics[0].geometry);
             console.log(watershed_geojson);
             // Using dojo.xhrGet, as we simply want to retrieve information
+            var resourceTypeSwitch = function(typeSelection) {
+                var options = {
+                    'Generic': 'GenericResource',
+                    'Geographic Feature': 'GeographicFeatureResource'
+                };
+                return options[typeSelection];
+            };
+
+            var resourceAbstract = $('#resource-abstract').val();
+            var resourceTitle = $('#resource-title').val();
+            var resourceKeywords = $('#resource-keywords').val() ? $('#resource-keywords').val() : "";
+            var resourceType = resourceTypeSwitch($('#resource-type').val());
+
+             if (!resourceTitle || !resourceKeywords || !resourceAbstract) {
+                displayStatus.removeClass('uploading');
+                displayStatus.addClass('error');
+                displayStatus.html('<em>You must provide all metadata information.</em>');
+                return;
+            }
+
             dojo.xhrPost({
                 // The URL of the request
                 url: "upload-to-hydroshare/",
                 // Handle the result as JSON data
                 handleAs: "json",
                 content: {
-                        "geojson_str": JSON.stringify(watershed_geojson)
+                        "geojson_str": JSON.stringify(watershed_geojson),
+                        'r_title': resourceTitle,
+                        'r_type': resourceType,
+                        'r_abstract': resourceAbstract,
+                        'r_keywords': resourceKeywords
                 },
                 headers: {
                         "X-CSRFToken": Cookie("csrftoken")
@@ -176,11 +195,9 @@ require([
                     alert("bad");
                 }
             });
-
-        }
+        });
 
         //adds public functions to variable app
-        app = {computeWatershed: computeWatershed,
-            upload_to_HS: upload_to_HS
+        app = {computeWatershed: computeWatershed
         };
 });
