@@ -150,7 +150,7 @@ require([
             //convert watershed polygon to geojson file
             var watershed_geojson = Terraformer.ArcGIS.parse(watersheds.graphics[0].geometry);
             console.log(watershed_geojson);
-            // Using dojo.xhrGet, as we simply want to retrieve information
+
             var resourceTypeSwitch = function(typeSelection) {
                 var options = {
                     'Generic': 'GenericResource',
@@ -177,7 +177,7 @@ require([
             }
 
             $('#hydroshare-proceed').prop('disabled', true);
-
+            // Using dojo.xhrGet, as we simply want to retrieve information
             dojo.xhrPost({
                 // The URL of the request
                 url: "upload-to-hydroshare/",
@@ -214,7 +214,46 @@ require([
             });
         });
 
+        function run_download_results(){
+
+            //convert watershed polygon to geojson file
+            var watershed_geojson = Terraformer.ArcGIS.parse(watersheds.graphics[0].geometry);
+            console.log(watershed_geojson);
+
+            //// Using dojo.xhrGet, as we simply want to retrieve information
+
+            dojo.xhrPost({
+                // The URL of the request
+                url: "download-results/",
+                // Handle the result as JSON data
+                handleAs: "",
+                content: {
+                        "geojson_str": JSON.stringify(watershed_geojson)
+                },
+                headers: {
+                        "X-CSRFToken": Cookie("csrftoken")
+                },
+                // The success handler
+                load: function(data) {
+                   alert("good");
+                    console.log(data);
+                    //var element = document.createElement('a');
+                    //element.setAttribute('href', 'data:application/zip;base64,' + encodeURIComponent(data));
+                    //element.setAttribute('download', 'watershed1.zip');
+                    //element.style.display = 'none';
+                    //document.body.appendChild(element);
+                    //element.click();
+                    //document.body.removeChild(element);
+                },
+                // The error handler
+                error: function() {
+                    alert("Error");
+                }
+            });
+        }
+
         //adds public functions to variable app
-        app = {computeWatershed: computeWatershed
+        app = {computeWatershed: computeWatershed,
+            run_download_results:run_download_results
         };
 });

@@ -4,11 +4,12 @@ import os
 import traceback
 import osgeo.osr as osr
 import osgeo.ogr as ogr
+import zipfile
 
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from tethys_sdk.gizmos import Button,TextInput
-from django.http import JsonResponse
+from django.http import JsonResponse,FileResponse
 from django.views.decorators.csrf import csrf_exempt
 from hs_restclient import HydroShare, HydroShareAuthBasic
 from oauthlib.oauth2 import TokenExpiredError
@@ -31,7 +32,7 @@ def home(request):
                     submit=False)
     btnUpload = Button(display_text="Upload to HydroShare",
                 name="btnUpload",
-                attributes="onclick=app.upload_to_HS()",
+                attributes="",
                 submit=False)
 
     context = {'btnCompute': btnCompute,
@@ -142,7 +143,6 @@ def upload_to_hydroshare(request):
                 raise
 
     except ObjectDoesNotExist as e:
-        print ("1231")
         print str(e)
         return_json['error'] = 'Login timed out! Please re-sign in with your HydroShare account.'
     except TokenExpiredError as e:
@@ -163,3 +163,96 @@ def upload_to_hydroshare(request):
                 shutil.rmtree(temp_dir)
 
     return JsonResponse(return_json)
+
+def download_results(request):
+
+    temp_dir = None
+    try:
+        return_json = {}
+        if request.method == 'POST':
+            get_data = request.POST
+
+            watershed_geojson_str = str(get_data['geojson_str'])
+
+            #create a temp directory to save all files
+            temp_dir = tempfile.mkdtemp()
+
+            #generate geojson file
+            watershed_geojson_path = os.path.join(temp_dir, "watershed.geojson")
+
+            with open(watershed_geojson_path, 'w') as fd:
+                fd.write(watershed_geojson_str)
+
+            #generate kml file
+            watershed_kml_path = os.path.join(temp_dir, "watershed.kml")
+
+            #extract geometry
+            watershed_geometry =ogr.CreateGeometryFromJson(watershed_geojson_str)
+            # print watershed_geometry
+
+            watershed_kml_body = watershed_geometry.ExportToKML()
+            watershed_kml_header = '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Placemark>'
+            watershed_kml_foot = '</Placemark></kml>'
+            watershed_kml = watershed_kml_header + watershed_kml_body + watershed_kml_foot
+
+            with open(watershed_kml_path, 'w') as fd:
+                fd.write(watershed_kml)
+
+            shpfile_name = "watershed"
+            #generate shapefile
+            watershed_shpfile_path = os.path.join(temp_dir, shpfile_name)
+
+            driver = ogr.GetDriverByName("ESRI Shapefile")
+            # create the data source
+            data_source = driver.CreateDataSource(watershed_shpfile_path)
+            # create the spatial reference, WGS84
+            srs = osr.SpatialReference()
+            srs.ImportFromEPSG(4326)
+            # create the layer
+            layer = data_source.CreateLayer("watershed", srs, ogr.wkbPolygon)
+            layer.CreateField(ogr.FieldDefn("Latitude", ogr.OFTReal))
+            layer.CreateField(ogr.FieldDefn("Longitude", ogr.OFTReal))
+            feature = ogr.Feature(layer.GetLayerDefn())
+            # Export geometry to WKT
+            # watershed_wkt = watershed_geometry.ExportToWkt()
+            # Set the feature geometry using the point
+            feature.SetGeometry(watershed_geometry)
+            # Create the feature in the layer (shapefile)
+            layer.CreateFeature(feature)
+
+            # Destroy the feature to free resources
+            feature.Destroy()
+            # Destroy the data source to free resources
+            data_source.Destroy()
+
+            watershed_shp_path = watershed_shpfile_path + "/" + shpfile_name + ".shp"
+            watershed_shx_path = watershed_shpfile_path + "/" + shpfile_name + ".shx"
+            watershed_dbf_path = watershed_shpfile_path + "/" + shpfile_name + ".dbf"
+            watershed_prj_path = watershed_shpfile_path + "/" + shpfile_name + ".prj"
+
+            watershed_zip_path = os.path.join(temp_dir, "watershed.zip")
+            items = [watershed_geojson_path, watershed_shp_path, watershed_prj_path, watershed_shx_path, watershed_dbf_path, watershed_kml_path]
+            watershed_zip_file = zipfile.ZipFile(watershed_zip_path, "w")
+
+            for item in items:
+                watershed_zip_file.write(item)
+
+            watershed_zip_file.close()
+            print watershed_zip_file
+
+            return_json['success'] = 'Success'
+
+            response = FileResponse(open(watershed_zip_path, 'rb'), content_type='application/zip')
+            response['Content-Disposition'] = 'attachment; filename="' + shpfile_name + '.zip"'
+            response['Content-Length'] = os.path.getsize(watershed_zip_path)
+
+            return response
+    except:
+        return_json['error'] = 'Error'
+
+
+    finally:
+        if temp_dir != None:
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
+
