@@ -72,89 +72,102 @@ require([
         gp.setOutSpatialReference({wkid: 102100});
         map.on("click", addPoint);
 
-     function addPoint(evt) {
-         tempPoint.clear();
-         watersheds.clear();
-         map.graphics.clear();
+        function addPoint(evt) {
+            tempPoint.clear();
+            watersheds.clear();
+            map.graphics.clear();
 
-         var graphic = new Graphic(evt.mapPoint, pointSymbol);
-         tempPoint.add(graphic);
+            var graphic = new Graphic(evt.mapPoint, pointSymbol);
+            tempPoint.add(graphic);
 
-         var features = [];
-         features.push(graphic);
-         featureSet.features = features;
-      }
-
-      function computeWatershed(evt) {
-
-        var params = {
-          "InputPoints": featureSet,
-          "SnapDistance": "5000",
-          "SnapDistanceUnits": "Meters",
-          "SourceDatabase": "FINEST",
-          "Generalize": "True"
-        };
-        gp.submitJob(params, completeCallback, statusCallback, function(error){
-        console.log("Error", error, params);
-        window.alert("Sorry, we do not have data for this region at your requested resolution");
-        });
+            var features = [];
+            features.push(graphic);
+            featureSet.features = features;
         }
 
-    function statusCallback(jobInfo) {
-        console.log(jobInfo.jobStatus);
-        if (jobInfo.jobStatus === "esriJobSubmitted") {
-          $("#delinstatus").html("<h7 style='color:blue'><b>Job submitted...</b></h7>");
-        } else if (jobInfo.jobStatus === "esriJobExecuting") {
-            $("#delinstatus").html("<h7 style='color:red;'><b>Calculating...</b></h7>");
-        } else if (jobInfo.jobStatus === "esriJobSucceeded") {
-            $("#delinstatus").html("<h7 style='color:green;'><b>Succeed!</b></h7>");
+        function computeWatershed(evt) {
+            //check if get watershed result
+            if (tempPoint.graphics.length == 0) {
+                alert("Please click on the map or search a location first!");
+                return;
+            }
+
+            var params = {
+                "InputPoints": featureSet,
+                "SnapDistance": "5000",
+                "SnapDistanceUnits": "Meters",
+                "SourceDatabase": "FINEST",
+                "Generalize": "True"
+            };
+          gp.submitJob(params, completeCallback, statusCallback, function (error) {
+              console.log("Error", error, params);
+              window.alert("Sorry, we do not have data for this region at your requested resolution");
+          });
         }
-      }
 
-      function completeCallback(jobInfo){
-        gp.getResultData(jobInfo.jobId, "WatershedArea", drawWatershed);
-        gp.getResultData(jobInfo.jobId, "SnappedPoints", drawSnappedPoint);
-      }
-
-      function drawWatershed(results) {
-        console.log(results);
-        var features = results.value.features;
-        for (var f=0, fl=features.length; f<fl; f++) {
-            var feature = features[f];
-            feature.setSymbol(polySymbol);
-            watersheds.add(feature);
-                    }
-          map.setExtent(graphicsUtils.graphicsExtent(watersheds.graphics), true);
-          console.log(watersheds.graphics[0].geometry);
-
-          //convert watershed polygon to geojson file
-          //var watershed_geojson = Terraformer.ArcGIS.parse(watersheds.graphics[0].geometry);
-
-      }
-
-      function drawSnappedPoint(results) {
-        console.log(results);
-        var features = results.value.features;
-        for (var f=0, fl=features.length; f<fl; f++) {
-            var feature = features[f];
-            feature.setSymbol(snapSymbol);
-            map.graphics.add(feature);
+        function statusCallback(jobInfo) {
+            console.log(jobInfo.jobStatus);
+            if (jobInfo.jobStatus === "esriJobSubmitted") {
+              $("#delinstatus").html("<h7 style='color:blue'><b>Job submitted...</b></h7>");
+            } else if (jobInfo.jobStatus === "esriJobExecuting") {
+                $("#delinstatus").html("<h7 style='color:red;'><b>Calculating...</b></h7>");
+            } else if (jobInfo.jobStatus === "esriJobSucceeded") {
+                $("#delinstatus").html("<h7 style='color:green;'><b>Succeed!</b></h7>");
+            }
         }
-      }
+
+        function completeCallback(jobInfo){
+            gp.getResultData(jobInfo.jobId, "WatershedArea", drawWatershed);
+            gp.getResultData(jobInfo.jobId, "SnappedPoints", drawSnappedPoint);
+        }
+
+        function drawWatershed(results) {
+            console.log(results);
+            var features = results.value.features;
+            for (var f=0, fl=features.length; f<fl; f++) {
+                var feature = features[f];
+                feature.setSymbol(polySymbol);
+                watersheds.add(feature);
+            }
+              map.setExtent(graphicsUtils.graphicsExtent(watersheds.graphics), true);
+              console.log(watersheds.graphics[0].geometry);
+
+              //convert watershed polygon to geojson file
+              //var watershed_geojson = Terraformer.ArcGIS.parse(watersheds.graphics[0].geometry);
+
+        }
+
+        function drawSnappedPoint(results) {
+            console.log(results);
+            var features = results.value.features;
+            for (var f=0, fl=features.length; f<fl; f++) {
+                var feature = features[f];
+                feature.setSymbol(snapSymbol);
+                map.graphics.add(feature);
+            }
+        }
+
         function requestSucceeded(data) {
               console.log("Data: ", data); // print the data to browser's console
-            }
+        }
 
         function requestFailed(error) {
               console.log("Error: ", error.message);
-            }
+        }
 
         $('#hydroshare-proceed').on('click', function (){
+
+             //check if get watershed result
+            if (watersheds.graphics.length == 0){
+                alert("Please select a location and delineate watershed first!");
+                return;
+            }
+
             //convert watershed polygon to geojson file
             var watershed_geojson = Terraformer.ArcGIS.parse(watersheds.graphics[0].geometry);
             console.log(watershed_geojson);
 
-            var resourceTypeSwitch = function(typeSelection) {
+            var resourceTypeSwitch = function(typeSelection){
                 var options = {
                     'Generic': 'GenericResource',
                     'Geographic Feature': 'GeographicFeatureResource'
@@ -172,14 +185,15 @@ require([
             displayStatus.addClass('uploading');
             displayStatus.html('<em>Uploading...</em>');
 
-             if (!resourceTitle || !resourceKeywords || !resourceAbstract) {
+            if (!resourceTitle || !resourceKeywords || !resourceAbstract) {
                 displayStatus.removeClass('uploading');
                 displayStatus.addClass('error');
                 displayStatus.html('<em>You must provide all metadata information.</em>');
-                return;
+            return;
             }
 
             $('#hydroshare-proceed').prop('disabled', true);
+
             // Using dojo.xhrGet, as we simply want to retrieve information
             dojo.xhrPost({
                 // The URL of the request
@@ -217,7 +231,13 @@ require([
             });
         });
 
-        function run_download_results(){
+        function run_generate_files() {
+
+            //check if get watershed result
+            if (watersheds.graphics.length == 0) {
+                alert("Please select a location and delineate watershed first!")
+                return;
+            }
 
             //convert watershed polygon to geojson file
             var watershed_geojson = Terraformer.ArcGIS.parse(watersheds.graphics[0].geometry);
@@ -226,7 +246,7 @@ require([
             //Using dojo.xhrGet, as we simply want to retrieve information
             dojo.xhrPost({
                 // The URL of the request
-                url: "download-results/",
+                url: "generate-files/",
                 // Handle the result as JSON data
                 handleAs: "json",
                 content: {
@@ -248,8 +268,20 @@ require([
             });
         }
 
+        function clearUploadForm() {
+            $('#resource-title').val('');
+            $('#resource-abstract').val('');
+            $('#resource-keywords').val('');
+            $('#display-status')
+                .removeClass('error')
+                .removeClass('uploading')
+                .removeClass('success')
+                .empty()
+        }
+
         //adds public functions to variable app
         app = {computeWatershed: computeWatershed,
-            run_download_results:run_download_results
+            run_generate_files:run_generate_files,
+            clearUploadForm:clearUploadForm
         };
 });
