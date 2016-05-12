@@ -237,7 +237,7 @@ require([
                 },
                 // The success handler
                 load: function (data) {
-                    alert("Sucess");
+                    alert("Success");
                     url = "download/?path=" + data['zipfile_path'];
                     $('#download_link').prop('href', url);
                 },
