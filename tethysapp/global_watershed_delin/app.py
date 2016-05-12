@@ -32,6 +32,9 @@ class GlobalWatershedDelineationService(TethysAppBase):
                     UrlMap(name='download_results',
                            url='global-watershed-delin/download-results',
                            controller='global_watershed_delin.controllers.download_results'),
+                    UrlMap(name='download',
+                           url='global-watershed-delin/download',
+                           controller='global_watershed_delin.controllers.download'),
         )
 
         return url_maps

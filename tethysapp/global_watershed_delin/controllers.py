@@ -238,21 +238,44 @@ def download_results(request):
                 watershed_zip_file.write(item)
 
             watershed_zip_file.close()
-            print watershed_zip_file
-
+            # print watershed_zip_file
             return_json['success'] = 'Success'
+            return_json['zipfile_path'] = watershed_zip_path
 
-            response = FileResponse(open(watershed_zip_path, 'rb'), content_type='application/zip')
-            response['Content-Disposition'] = 'attachment; filename="' + shpfile_name + '.zip"'
-            response['Content-Length'] = os.path.getsize(watershed_zip_path)
+            # response = FileResponse(open(watershed_zip_path, 'rb'), content_type='application/zip')
+            # response['Content-Disposition'] = 'attachment; filename="' + shpfile_name + '.zip"'
+            # response['Content-Length'] = os.path.getsize(watershed_zip_path)
+            #
+            # return response
+    except:
+        return_json['error'] = 'Error'
+        if temp_dir != None:
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
+
+    finally:
+        return JsonResponse(return_json)
+
+
+def download(request):
+
+    temp_dir = None
+    try:
+        return_json = {}
+        if request.method == 'GET':
+            get_data = request.GET
+
+            path = str(get_data['path'])
+
+            response = FileResponse(open(path, 'rb'), content_type='application/zip')
+            response['Content-Disposition'] = 'attachment; filename="' + 'watershed.zip"'
+            response['Content-Length'] = os.path.getsize(path)
 
             return response
     except:
         return_json['error'] = 'Error'
 
-
     finally:
         if temp_dir != None:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
-

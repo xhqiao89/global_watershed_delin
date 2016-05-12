@@ -220,33 +220,26 @@ require([
             var watershed_geojson = Terraformer.ArcGIS.parse(watersheds.graphics[0].geometry);
             console.log(watershed_geojson);
 
-            //// Using dojo.xhrGet, as we simply want to retrieve information
-
+            //Using dojo.xhrGet, as we simply want to retrieve information
             dojo.xhrPost({
                 // The URL of the request
                 url: "download-results/",
                 // Handle the result as JSON data
-                handleAs: "",
+                handleAs: "json",
                 content: {
-                        "geojson_str": JSON.stringify(watershed_geojson)
+                    "geojson_str": JSON.stringify(watershed_geojson)
                 },
                 headers: {
-                        "X-CSRFToken": Cookie("csrftoken")
+                    "X-CSRFToken": Cookie("csrftoken")
                 },
                 // The success handler
-                load: function(data) {
-                   alert("good");
-                    console.log(data);
-                    //var element = document.createElement('a');
-                    //element.setAttribute('href', 'data:application/zip;base64,' + encodeURIComponent(data));
-                    //element.setAttribute('download', 'watershed1.zip');
-                    //element.style.display = 'none';
-                    //document.body.appendChild(element);
-                    //element.click();
-                    //document.body.removeChild(element);
+                load: function (data) {
+                    alert("Sucess");
+                    url = "download/?path=" + data['zipfile_path'];
+                    $('#download_link').prop('href', url);
                 },
                 // The error handler
-                error: function() {
+                error: function () {
                     alert("Error");
                 }
             });
