@@ -19,6 +19,9 @@ require([
     ],
     function(dom, Color, Cookie, Dialog, Button, TextBox, Map, Search, Graphic, graphicsUtils, Geoprocessor, FeatureSet, ArcGISTiledMapServiceLayer, GraphicsLayer, SimpleMarkerSymbol, SimpleFillSymbol, CartographicLineSymbol){
 
+        var popupDiv = $('#welcome-popup');
+        popupDiv.modal('show');
+
         var map, gp;
         var featureSet = new FeatureSet();
 

@@ -21,10 +21,29 @@
         height: 50px;
         width: 500px;
       }
+      #byu-logo-container {
+        float: left;
+        position: absolute;
+        bottom: 8px;
+        }
+      #byu-logo-container img {
+        float: left;
+        height: 50px;
+        width: 50px;
+      }
+        #byu-logo-container span {
+        position: relative;
+        top: 25px;
+        margin-left: 10px;
+        }
     </style>
 {% endblock %}
 
 {% block app_navigation_items %}
+
+<button type="button" class="btn btn-default" data-toggle="modal" data-target="#welcome-popup">Instructions</button>
+
+<p></p>
 
 <div id="search"></div>
 
@@ -50,6 +69,53 @@
             <img src="/static/global_watershed_delin/images/hydroshare.gif" height="20px"/>Upload to HydroShare
         </a>
 
+{% endblock %}
+
+{% block app_content_wrapper_override %}
+<!-- Modal  -->
+<div class="modal fade" id="welcome-popup" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h5 class="modal-title">Welcome to the Gloabal Watershed Delineation Service!</h5>
+            </div>
+            <div class="modal-body">
+                <div id="welcome-info">
+                    <ol>
+                        <p>Welcome to the Gloabal Watershed Delineation Service Web App. This app allows you to perform watershed delineation task all over the world.</p>
+                        <h6>Instructions:</h6>
+                        <h7>1. Select point of interest</h7>
+                        <p>Click the map or search for a location to identify a watershed outlet and stream reach of interest</p>
+                        <h7>2. Run waterhshed delineation service</h7>
+                        <p>Click on "Delineate Watershed" button. The results will be shown on map. </p>
+                        <h7>3. Download Results</h7>
+                        <p>
+                           Click the "Generate GeoJSON, KML, Shapefile" button to get the GeoJSON file, KML file, and Shapefile of the watershed polygon first. Then click "Download Results" to save them as a zip file.
+                        </p>
+                        <h7>4. Upload to HydroShare</h7>
+                        <p>Click the "Upload to HydroShare" and fill out the metadata form. Uploading your results to HydroShare creates
+                            a permanent HydroShare resource that can be directly retrieved and used later without having to re-run this app.</p>
+                        <h9>Note: This app uses ESRI watershed delineation service so it may require ArcGIS Service credits.</h9>
+                        <br>
+                        <div id="extra-buttons">
+                            <a class="btn btn-default" href="https://github.com/xhqiao89/global_watershed_delin" target="_blank">More Info (Github)</a>
+                        </div>
+                    </ol>
+                </div>
+            </div>
+            <div class="modal-footer">
+                 <div id="byu-logo-container">
+                     <img src="{% static 'global_watershed_delin/images/byu-logo.png' %}"/>
+                    <span><i>Developed at the BYU Hydroinformatics Lab</i></span>
+                 </div>
+                <button type="button" class="btn btn-default" id="close-popup" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Modal -->
+{{block.super}}
 {% endblock %}
 
 {% block app_content %}
