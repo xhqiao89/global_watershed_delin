@@ -15,10 +15,16 @@ require([
           "esri/layers/GraphicsLayer",
           "esri/symbols/SimpleMarkerSymbol",
           "esri/symbols/SimpleFillSymbol",
-          "esri/symbols/CartographicLineSymbol"
+          "esri/symbols/CartographicLineSymbol",
+          "esri/urlUtils"
     ],
-    function(dom, Color, Cookie, Dialog, Button, TextBox, Map, Search, Graphic, graphicsUtils, Geoprocessor, FeatureSet, ArcGISTiledMapServiceLayer, GraphicsLayer, SimpleMarkerSymbol, SimpleFillSymbol, CartographicLineSymbol){
+    function(dom, Color, Cookie, Dialog, Button, TextBox, Map, Search, Graphic, graphicsUtils, Geoprocessor, FeatureSet, ArcGISTiledMapServiceLayer, GraphicsLayer, SimpleMarkerSymbol, SimpleFillSymbol, CartographicLineSymbol, urlUtils){
 
+         urlUtils.addProxyRule({
+          urlPrefix: "hydro.arcgis.com",
+          proxyUrl: "/PHP/proxy.php"
+        });
+        
         var popupDiv = $('#welcome-popup');
         popupDiv.modal('show');
 
