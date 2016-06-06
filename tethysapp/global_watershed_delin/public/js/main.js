@@ -92,9 +92,15 @@ require([
                 return;
             }
 
+            snapDistance = document.getElementById('snapDistance').value;
+            if(snapDistance.length == 0 || parseFloat(snapDistance) < 0 ){
+                alert("Please input a valid snap distance!");
+                return;
+            }
+
             var params = {
                 "InputPoints": featureSet,
-                "SnapDistance": "5000",
+                "SnapDistance": snapDistance,
                 "SnapDistanceUnits": "Meters",
                 "SourceDatabase": "FINEST",
                 "Generalize": "True"
