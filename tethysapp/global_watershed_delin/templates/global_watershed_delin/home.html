@@ -47,20 +47,24 @@
 
 <div id="search"></div>
 
+<p size="3">Input Snap Distance (m)</p>
+
+<input type="text" value="500" id="snapDistance">
+
+<p></p>
+
 {% gizmo button btnCompute %}
 
 <div id="statusDiv">
     <p id="delinstatus"></p>
   </div>
 
-<a name="btnGenerate" class="btn btn-default" id="btnGenerate" onclick="app.run_download_results()">Generate GeoJSON, KML, Shapefile
-        </a>
+<a name="btnGenerate" class="btn btn-default" id="btnGenerate" onclick="app.run_generate_files()">Generate GeoJSON, KML, Shapefile</a>
 
 <p></p>
 
 <a name="download_link" class="btn btn-default" id="download_link">
-    <img src="/static/global_watershed_delin/images/download.png" height="20px"/>Download Results
-        </a>
+    <img src="/static/global_watershed_delin/images/download.png" height="20px"/>Download Results</a>
 
 <!--<a id="download_link" href="">Download Results</a>-->
 <p></p>
@@ -87,14 +91,16 @@
                         <h6>Instructions:</h6>
                         <h7>1. Select point of interest</h7>
                         <p>Click the map or search for a location to identify a watershed outlet and stream reach of interest</p>
-                        <h7>2. Run waterhshed delineation service</h7>
-                        <p>Click on "Delineate Watershed" button. The results will be shown on map. </p>
-                        <h7>3. Download Results</h7>
+                        <h7>2. Input snap distance of point</h7>
+                        <p>Define maximum distance to search for a cell of higher accumulated flow.</p>
+                        <h7>3. Run waterhshed delineation service</h7>
+                        <p>Click on "Delineate Watershed" button to run the service. The results will be shown on map. </p>
+                        <h7>4. Download results</h7>
                         <p>
-                           Click the "Generate GeoJSON, KML, Shapefile" button to get the GeoJSON file, KML file, and Shapefile of the watershed polygon first. Then click "Download Results" to save them as a zip file.
+                           Click the "Generate GeoJSON, KML, Shapefile" button to get the GeoJSON file, KML file, and Shapefile of the watershed polygon first. Then click "Download Results" button to save them as a zip file.
                         </p>
-                        <h7>4. Upload to HydroShare</h7>
-                        <p>Click the "Upload to HydroShare" and fill out the metadata form. Uploading your results to HydroShare creates
+                        <h7>5. Upload to HydroShare</h7>
+                        <p>Click the "Upload to HydroShare" button and fill out the metadata form. Uploading your results to HydroShare creates
                             a permanent HydroShare resource that can be directly retrieved and used later without having to re-run this app.</p>
                         <h9>Note: This app uses ESRI watershed delineation service so it may require ArcGIS Service credits.</h9>
                         <br>
@@ -155,14 +161,14 @@
                     <textarea rows="6" cols="50" id="resource-abstract" class="form-control"></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="resource-keywords" class="control-label">*Resource Keywords:</label>
+                    <label for="resource-keywords" class="control-label">*Resource Keywords (Separate each keyword with a comma):</label>
                     <input type="text" class="form-control" id="resource-keywords">
                 </div>
             </div>
             <div class="modal-footer">
                 <div id="display-status" class="col-md-8"></div>
                 <div id="footer-buttons" class="col-md-4">
-                    <button type="button" class="btn btn-default footer" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-default footer" data-dismiss="modal" onclick="app.clearUploadForm()">Close</button>
                     <button type="button" class="btn btn-primary footer" id="hydroshare-proceed">Proceed</button>
                 </div>
             </div>

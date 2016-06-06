@@ -17,7 +17,6 @@ from hs_restclient import HydroShare, HydroShareAuthOAuth2, HydroShareNotAuthori
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-#from osgeo import ogr
 
 hs_hostname = "www.hydroshare.org"
 
@@ -26,7 +25,7 @@ def home(request):
     """
     Controller for the app home page.
     """
-    btnCompute = Button(display_text="Delineate watershed",
+    btnCompute = Button(display_text="Delineate Watershed",
                     name="btnCompute",
                     attributes="onclick=app.computeWatershed()",
                     submit=False)
@@ -164,7 +163,8 @@ def upload_to_hydroshare(request):
 
     return JsonResponse(return_json)
 
-def download_results(request):
+
+def generate_files(request):
 
     temp_dir = None
     try:
@@ -213,8 +213,7 @@ def download_results(request):
             layer.CreateField(ogr.FieldDefn("Latitude", ogr.OFTReal))
             layer.CreateField(ogr.FieldDefn("Longitude", ogr.OFTReal))
             feature = ogr.Feature(layer.GetLayerDefn())
-            # Export geometry to WKT
-            # watershed_wkt = watershed_geometry.ExportToWkt()
+
             # Set the feature geometry using the point
             feature.SetGeometry(watershed_geometry)
             # Create the feature in the layer (shapefile)
@@ -242,11 +241,6 @@ def download_results(request):
             return_json['success'] = 'Success'
             return_json['zipfile_path'] = watershed_zip_path
 
-            # response = FileResponse(open(watershed_zip_path, 'rb'), content_type='application/zip')
-            # response['Content-Disposition'] = 'attachment; filename="' + shpfile_name + '.zip"'
-            # response['Content-Length'] = os.path.getsize(watershed_zip_path)
-            #
-            # return response
     except:
         return_json['error'] = 'Error'
         if temp_dir != None:
